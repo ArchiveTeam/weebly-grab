@@ -71,7 +71,7 @@ if not WGET_AT:
 #
 # Update this each time you make a non-cosmetic change.
 # It will be added to the WARC files and reported to the tracker.
-VERSION = '20260917.03'
+VERSION = '20260917.04'
 TRACKER_ID = 'weebly'
 TRACKER_HOST = 'legacy-api.arpa.li'
 MULTI_ITEM_SIZE = 100
@@ -320,10 +320,10 @@ class WgetArgs(object):
             '--hosts-file', '/dev/null',
             '--resolvconf-file', '/dev/null',
             '--dns-servers', ','.join([
-                '9.9.9.10',
-                '149.112.112.10',
-                '2620:fe::10',
-                '2620:fe::fe:10',
+                '1.1.1.1',
+                '1.0.0.1',
+                '2606:4700:4700::1111',
+                '2606:4700:4700::1001',
             ]),
             '--reject-reserved-subnets',
             #'--prefer-family', ('IPv4' if 'PREFER_IPV4' in os.environ else 'IPv6'),
