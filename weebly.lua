@@ -354,7 +354,7 @@ allowed = function(url)
       if found["type"] == "page"
         and host == page_host
         and context["stash_pages"] then
-        target = discovered_stash
+        --target = discovered_stash
       end
       discover_item(target, percent_encode_url(new_item))
       return false
@@ -929,7 +929,7 @@ wget.callbacks.finish = function(start_time, end_time, wall_time, numurls, total
   file:close()
   for key, data in pairs({
     ["weebly-485228e7414c957f"] = discovered_items,
-    ["weebly-stash-37bf6477d0c34dc2?shard=stash"] = discovered_stash,
+    --["weebly-stash-37bf6477d0c34dc2?shard=stash"] = discovered_stash,
     ["urls-37a59ecb1f858125"] = discovered_outlinks
   }) do
     print("queuing for", string.match(key, "^(.+)%-"))
