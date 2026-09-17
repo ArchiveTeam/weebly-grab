@@ -169,12 +169,18 @@ accept_ip = function(url)
           ["type"] = record_type
         }
       })
-      for _, server in ipairs({"9.9.9.10", "149.112.112.10"}) do
+      for _, server in ipairs({
+        "9.9.9.10",
+        "149.112.112.10",
+        "2620:fe::10",
+        "2620:fe::fe:10"
+      }) do
         local udp = socket.udp()
         udp:settimeout(1)
-        udp:setpeername(server, 53)
-        udp:send(packet)
-        local response = udp:receive()
+        local response = nil
+        if udp:setpeername(server, 53) and udp:send(packet) then
+          response = udp:receive()
+        end
         udp:close()
         if response then
           local decoded = dns.decode(response)
