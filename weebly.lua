@@ -221,7 +221,7 @@ accept_ip = function(url)
       end
     end
     if not dns_result then
-      error("DNS resolver errors.")
+      error("DNS resolver errors for " .. domain .. ".")
     end
   end
   accept_ip_cache[domain] = false
