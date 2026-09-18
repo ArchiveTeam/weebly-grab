@@ -742,6 +742,7 @@ wget.callbacks.write_to_warc = function(url, http_stat)
     or status_code == 301
     or status_code == 302
     or status_code == 404
+    or status_code == 410
   ) then
     retry_url = true
     return false
