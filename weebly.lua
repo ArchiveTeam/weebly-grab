@@ -158,7 +158,7 @@ accept_ip = function(url)
   for _, record_type in ipairs({"A", "AAAA"}) do
     local dns_result = false
     local dns_tries = 0
-    while not dns_result and dns_tries < 5 do
+    while not dns_result and dns_tries <= 10 do
       local id = math.random(65535)
       local packet = dns.encode({
         ["id"] = id,
@@ -176,7 +176,7 @@ accept_ip = function(url)
         "2606:4700:4700::1001"
       }) do
         local udp = socket.udp()
-        udp:settimeout(1)
+        udp:settimeout(10)
         local response = nil
         if udp:setpeername(server, 53) and udp:send(packet) then
           response = udp:receive()
@@ -215,8 +215,8 @@ accept_ip = function(url)
       end
       if not dns_result then
         dns_tries = dns_tries + 1
-        if dns_tries < 5 then
-          os.execute("sleep " .. math.floor(math.pow(2, dns_tries - 1)))
+        if dns_tries <= 10 then
+          os.execute("sleep 1")
         end
       end
     end
