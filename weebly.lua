@@ -249,7 +249,8 @@ accept_ip = function(url)
       end
     end
     if not dns_result then
-      error("DNS resolver errors for " .. domain .. ".")
+      print("DNS resolver errors for " .. domain .. ".")
+      return nil
     end
   end
   accept_ip_cache[domain] = false
@@ -334,6 +335,12 @@ allowed = function(url)
   end
 
   local found = find_item(url)
+  if found
+    and found["type"] == "page"
+    and find_path_loop(url) then
+    return false
+  end
+
   for _, pattern in pairs({
     "^https?://[^/]+/ajax/",
     "^https?://[^/]+/app/",
@@ -390,9 +397,7 @@ allowed = function(url)
         and context["stash_pages"] then
         --target = discovered_stash
       end
-      if not find_path_loop(new_item) then
-        discover_item(target, percent_encode_url(new_item))
-      end
+      discover_item(target, percent_encode_url(new_item))
       return false
     end
     return true
