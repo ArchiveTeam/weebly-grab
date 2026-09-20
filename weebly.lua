@@ -14,6 +14,7 @@ local item_type = nil
 local item_name = nil
 local item_value = nil
 
+local max_repetitions = 3
 local url_count = 0
 local tries = 0
 local downloaded = {}
@@ -42,6 +43,33 @@ local item_patterns = {
   ["^https?://([^/]+/favicon%.ico)$"] = "media",
   ["^https?://([^/]+/.*)$"] = "page",
 }
+
+find_path_loop = function(url)
+  local tested = {}
+  local tempurl = urlparse.unescape(url)
+  tempurl = string.match(tempurl, "^https?://[^/]+(.*)$")
+  if not tempurl then
+    return false
+  end
+  for s in string.gmatch(tempurl, "([^/%?&]+)") do
+    s = string.lower(s)
+    if not tested[s] then
+      if s == "" then
+        tested[s] = -2
+      elseif string.match(s, "^[0-9]+$") then
+        tested[s] = -1
+      else
+        tested[s] = 0
+      end
+    end
+    tested[s] = tested[s] + 1
+    if tested[s] == max_repetitions then
+      return true
+    end
+  end
+  return false
+end
+
 
 abort_item = function(item)
   abortgrab = true
@@ -362,7 +390,9 @@ allowed = function(url)
         and context["stash_pages"] then
         --target = discovered_stash
       end
-      discover_item(target, percent_encode_url(new_item))
+      if not find_path_loop(new_item) then
+        discover_item(target, percent_encode_url(new_item))
+      end
       return false
     end
     return true
