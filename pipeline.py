@@ -71,7 +71,7 @@ if not WGET_AT:
 #
 # Update this each time you make a non-cosmetic change.
 # It will be added to the WARC files and reported to the tracker.
-VERSION = '20260921.01'
+VERSION = '20260921.02'
 TRACKER_ID = 'weebly'
 TRACKER_HOST = 'legacy-api.arpa.li'
 MULTI_ITEM_SIZE = 100
@@ -360,6 +360,7 @@ class WgetArgs(object):
             '--warc-header', 'x-wget-at-project-name: ' + TRACKER_ID,
             '--warc-dedup-url-agnostic',
             '--impersonate', 'firefox148-h1',
+            '--user-agent', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:149.0) Gecko/20100101 Firefox/149.0',
             '--header', 'Accept-Encoding: identity'
         ]
 
