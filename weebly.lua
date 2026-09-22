@@ -1,6 +1,7 @@
 local urlparse = require("socket.url")
 local socket = require("socket")
 local dns = require("org.conman.dns")
+local idn2 = require("idn2")
 local https = require("ssl.https")
 local cjson = require("cjson")
 local utf8 = require("utf8")
@@ -179,6 +180,14 @@ accept_ip = function(url)
     return false
   end
   domain = string.match(domain, "^(.-):[0-9]+$") or domain
+  domain = urlparse.unescape(domain)
+  if string.find(domain, "\0") then
+    return false
+  end
+  domain = idn2.lookup(domain)
+  if not domain then
+    return false
+  end
   domain = string.lower(string.match(domain, "^(.-)%.*$"))
   if accept_ip_cache[domain] ~= nil then
     return accept_ip_cache[domain]
