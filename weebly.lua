@@ -295,7 +295,7 @@ allowed = function(url)
 
   local host = string.match(lower, "^https?://([^/]+)/")
   local page_host = string.match(string.lower(context["page_url"]), "^https?://([^/]+)/")
-  if not string.match(host, "%.") then
+  if not host or not string.match(host, "%.") then
     return false
   end
 
@@ -560,7 +560,7 @@ wget.callbacks.get_urls = function(file, url, is_css, iri)
   if allowed(url) and status_code < 300 then
     if string.match(url, "^https?://[^/]+/ajax/api/JsonRPC/Commerce/")
       or string.match(content_type, "^text/")
-      or string.match(content_type, "xml")
+      or string.match(content_type .. ";", "[/%+]xml[;%s]")
       or string.match(content_type, "javascript") then
       html = read_file(file)
     end
@@ -694,6 +694,9 @@ wget.callbacks.get_urls = function(file, url, is_css, iri)
       end
       for slideshow in string.gmatch(html, "wSlideshow%.render%((%b{})") do
         for images in string.gmatch(slideshow, "images:%s*(%b[])") do
+          images = string.gsub(images, "([%[{,:]%s*)'([^']*)'", function(prefix, value)
+            return prefix .. cjson.encode(value)
+          end)
           for _, image in ipairs(cjson.decode(images)) do
             local newurl = image["publishedUrl"] or image["url"]
             if not image["editorUrl"]
