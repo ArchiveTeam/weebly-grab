@@ -34,6 +34,7 @@ local ids = {}
 
 local retry_url = false
 local context = {}
+local warc_digests = {}
 local accept_ip_cache = {}
 
 local item_patterns = {
@@ -156,8 +157,7 @@ set_item = function(url)
       ids = {}
       context = {
         ["page_url"]=url,
-        ["digests"]={},
-        ["warc_digests"]={}
+        ["digests"]={}
       }
       item_value = new_item_value
       item_type = new_item_type
@@ -761,7 +761,7 @@ wget.callbacks.dedup_response = function(url, digest)
       error("WARC digest does not match downloaded data.")
     end
     context["digests"][url] = true
-    context["warc_digests"][digest] = true
+    warc_digests[digest] = true
   end
 end
 
@@ -796,7 +796,12 @@ wget.callbacks.write_to_warc = function(url, http_stat)
   end
 
   if status_code == 200 then
-    if http_stat["len"] == 0
+    local expected = nil
+    if headers["etag"] then
+      local etag = string.gsub(headers["etag"][1], "^W/", "")
+      expected = string.match(etag, "^\"([0-9a-fA-F]+)\"$") or string.match(etag, "^\"([0-9a-fA-F]+)%-gzip\"$")
+    end
+    if (http_stat["len"] == 0 and (not expected or string.lower(expected) ~= "d41d8cd98f00b204e9800998ecf8427e"))
       or (http_stat["contlen"] >= 0 and http_stat["len"] ~= http_stat["contlen"]) then
       retry_url = true
       return false
@@ -818,11 +823,6 @@ wget.callbacks.write_to_warc = function(url, http_stat)
         return false
       end
     end
-    local expected = nil
-    if headers["etag"] then
-      local etag = string.gsub(headers["etag"][1], "^W/", "")
-      expected = string.match(etag, "^\"([0-9a-fA-F]+)\"$") or string.match(etag, "^\"([0-9a-fA-F]+)%-gzip\"$")
-    end
     local sha1 = openssl_digest.new("sha1")
     local md5 = nil
     if expected and string.len(expected) == 32 then
@@ -840,7 +840,12 @@ wget.callbacks.write_to_warc = function(url, http_stat)
       end
     end
     file:close()
-    if md5 and basexx.to_hex(md5:final()) ~= string.upper(expected) then
+    if md5
+      and basexx.to_hex(md5:final()) ~= string.upper(expected)
+      and (
+        not headers["last-modified"]
+        or basexx.to_hex(openssl_digest.new("md5"):final(headers["last-modified"][1])) ~= string.upper(expected)
+      ) then
       error("File does not match etag.")
     end
     context["digests"][url["url"]] = "sha1:" .. basexx.to_base32(sha1:final())
@@ -947,7 +952,7 @@ end
 
 wget.callbacks.finish = function(start_time, end_time, wall_time, numurls, total_downloaded_bytes, total_download_time)
   for _, checked in pairs(context["digests"]) do
-    if checked ~= true and not context["warc_digests"][checked] then
+    if checked ~= true and not warc_digests[checked] then
       error("WARC digest does not match downloaded data.")
     end
   end
