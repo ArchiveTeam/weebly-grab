@@ -175,6 +175,9 @@ set_item = function(url)
 end
 
 accept_ip = function(url)
+  if true then
+    return false
+  end
   local domain = string.match(url, "^https?://([^/%?&;]+)")
   if not domain or string.match(domain, "@") then
     return false
