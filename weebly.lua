@@ -325,6 +325,7 @@ allowed = function(url)
 
   if host ~= page_host
     and not string.match(lower, "^https?://[^/]+%.weebly%.com/")
+    and not string.match(lower, "^https?://[^/]+%.square%.site/")
     and not string.match(lower, "^https?://[^/]+%.editmysite%.com/uploads/") then
     if string.match(lower, "^https?://[^/]+%.editmysite%.com/")
       or string.match(lower, "^https?://[^/]+%.google%-analytics%.com/")
